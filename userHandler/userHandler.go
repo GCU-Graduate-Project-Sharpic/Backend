@@ -16,9 +16,9 @@ type loginData struct {
 }
 
 type user struct {
-	Username string
-	Password string
-	Email    string
+	Username string `json:"username" binding:"resuired"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 }
 
 func User(c *gin.Context) {
@@ -60,6 +60,41 @@ func User(c *gin.Context) {
 		})
 	}
 
+}
+
+func Signup(c *gin.Context) {
+	var inputSignupData user
+
+	if err := c.ShouldBindJSON(&inputSignupData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	username := checkLogin(c)
+	if username != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "you are already logged in"})
+		return
+	} else {
+		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
+
+		db, err := sql.Open("postgres", psqlconn)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		defer db.Close()
+
+		id := 0
+		err = db.QueryRow(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, inputSignupData.Password, inputSignupData.Email).Scan(&id)
+
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusOK, gin.H{"status": "signup fail"})
+		}
+
+		c.JSON(http.StatusOK, gin.H{"status": "signup success", "id": id})
+		return
+	}
 }
 
 func Login(c *gin.Context) {

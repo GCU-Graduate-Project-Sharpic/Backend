@@ -14,6 +14,7 @@ func main() {
 	userApi := router.Group("/user")
 	{
 		userApi.GET("/", userHandler.User)
+		userApi.POST("signup", userHandler.Signup)
 		userApi.POST("/login", userHandler.Login)
 		userApi.POST("/logout", userHandler.Logout)
 	}
