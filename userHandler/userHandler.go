@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type loginData struct {
@@ -21,12 +22,12 @@ type user struct {
 	Email    string `json:"email" binding:"required"`
 }
 
+var psqlconn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
+
 func User(c *gin.Context) {
 	username := checkLogin(c)
 
 	if username != nil {
-		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-
 		db, err := sql.Open("postgres", psqlconn)
 		if err != nil {
 			fmt.Println(err)
@@ -70,31 +71,28 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	username := checkLogin(c)
-	if username != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "you are already logged in"})
-		return
-	} else {
-		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
+	// Convert to password excluding \n character at the end
+	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(inputSignupData.Password), bcrypt.DefaultCost)
 
-		db, err := sql.Open("postgres", psqlconn)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		defer db.Close()
-
-		id := 0
-		err = db.QueryRow(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, inputSignupData.Password, inputSignupData.Email).Scan(&id)
-
-		if err != nil {
-			fmt.Println(err)
-			c.JSON(http.StatusOK, gin.H{"status": "signup fail"})
-		}
-
-		c.JSON(http.StatusOK, gin.H{"status": "signup success", "id": id})
-		return
+	if err != nil {
+		fmt.Println(err)
 	}
+
+	db, err := sql.Open("postgres", psqlconn)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	defer db.Close()
+
+	id := 0
+	err = db.QueryRow(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, string(encryptedPW), inputSignupData.Email).Scan(&id)
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "signup fail", "error": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "signup success", "id": id})
 }
 
 func Login(c *gin.Context) {
@@ -110,8 +108,6 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "you are already logged in"})
 		return
 	} else {
-		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-
 		db, err := sql.Open("postgres", psqlconn)
 		if err != nil {
 			fmt.Println(err)
@@ -134,7 +130,10 @@ func Login(c *gin.Context) {
 			}
 		}
 
-		if inputLoginData.Username != userData.Username || inputLoginData.Password != userData.Password {
+		// compare password with sotred password
+		bcryptErr := bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(inputLoginData.Password))
+
+		if inputLoginData.Username != userData.Username || bcryptErr != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 			return
 		}
