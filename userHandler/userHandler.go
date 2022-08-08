@@ -17,7 +17,7 @@ type loginData struct {
 }
 
 type user struct {
-	Username string `json:"username" binding:"resuired"`
+	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 }
@@ -76,23 +76,29 @@ func Signup(c *gin.Context) {
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	db, err := sql.Open("postgres", psqlconn)
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	defer db.Close()
 
-	id := 0
-	err = db.QueryRow(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, string(encryptedPW), inputSignupData.Email).Scan(&id)
+	result, err := db.Exec(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, string(encryptedPW), inputSignupData.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "signup fail", "error": err})
+		return
+	}
 
+	cntAffected, err := result.RowsAffected()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": "signup fail", "error": err})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "signup success", "id": id})
+	c.JSON(http.StatusOK, gin.H{"status": "signup success", "result": cntAffected})
 }
 
 func Login(c *gin.Context) {
@@ -105,7 +111,7 @@ func Login(c *gin.Context) {
 
 	username := checkLogin(c)
 	if username != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "you are already logged in"})
+		c.JSON(http.StatusOK, gin.H{"status": "already logged in"})
 		return
 	} else {
 		db, err := sql.Open("postgres", psqlconn)
@@ -138,7 +144,7 @@ func Login(c *gin.Context) {
 			return
 		}
 		c.SetCookie("userId", userData.Username, 3600, "/", "localhost", false, true)
-		c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+		c.JSON(http.StatusOK, gin.H{"status": "login success"})
 		return
 	}
 }
@@ -146,7 +152,7 @@ func Login(c *gin.Context) {
 func Logout(c *gin.Context) {
 	c.SetCookie("userId", "", -1, "/", "localhost", false, true)
 
-	c.JSON(http.StatusOK, gin.H{"status": "you are logged out"})
+	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
 
 func checkLogin(c *gin.Context) *string {
