@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/chromato99/go-react-test-web-app/userHandler"
+	"github.com/GCU-Graduate-Project-Sharpic/Backend/userHandler"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )

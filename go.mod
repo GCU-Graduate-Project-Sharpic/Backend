@@ -1,4 +1,4 @@
-module github.com/chromato99/go-react-test-web-app
+module github.com/GCU-Graduate-Project-Sharpic/Backend
 
 go 1.18
 
