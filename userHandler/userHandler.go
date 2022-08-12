@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type loginData struct {
@@ -16,17 +17,17 @@ type loginData struct {
 }
 
 type user struct {
-	Username string
-	Password string
-	Email    string
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 }
+
+var psqlconn = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
 
 func User(c *gin.Context) {
 	username := checkLogin(c)
 
 	if username != nil {
-		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-
 		db, err := sql.Open("postgres", psqlconn)
 		if err != nil {
 			fmt.Println(err)
@@ -62,6 +63,44 @@ func User(c *gin.Context) {
 
 }
 
+func Signup(c *gin.Context) {
+	var inputSignupData user
+
+	if err := c.ShouldBindJSON(&inputSignupData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to password excluding \n character at the end
+	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(inputSignupData.Password), bcrypt.DefaultCost)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	db, err := sql.Open("postgres", psqlconn)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer db.Close()
+
+	result, err := db.Exec(`INSERT INTO user_list (username, password, email) VALUES ($1, $2, $3);`, inputSignupData.Username, string(encryptedPW), inputSignupData.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "signup fail", "error": err})
+		return
+	}
+
+	cntAffected, err := result.RowsAffected()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"status": "signup fail", "error": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "signup success", "result": cntAffected})
+}
+
 func Login(c *gin.Context) {
 	var inputLoginData loginData
 
@@ -72,11 +111,9 @@ func Login(c *gin.Context) {
 
 	username := checkLogin(c)
 	if username != nil {
-		c.JSON(http.StatusOK, gin.H{"status": "you are already logged in"})
+		c.JSON(http.StatusOK, gin.H{"status": "already logged in"})
 		return
 	} else {
-		psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", os.Getenv("POSTGRES_HOST"), 5432, os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"))
-
 		db, err := sql.Open("postgres", psqlconn)
 		if err != nil {
 			fmt.Println(err)
@@ -99,12 +136,15 @@ func Login(c *gin.Context) {
 			}
 		}
 
-		if inputLoginData.Username != userData.Username || inputLoginData.Password != userData.Password {
+		// compare password with sotred password
+		bcryptErr := bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(inputLoginData.Password))
+
+		if inputLoginData.Username != userData.Username || bcryptErr != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 			return
 		}
 		c.SetCookie("userId", userData.Username, 3600, "/", "localhost", false, true)
-		c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+		c.JSON(http.StatusOK, gin.H{"status": "login success"})
 		return
 	}
 }
@@ -112,7 +152,7 @@ func Login(c *gin.Context) {
 func Logout(c *gin.Context) {
 	c.SetCookie("userId", "", -1, "/", "localhost", false, true)
 
-	c.JSON(http.StatusOK, gin.H{"status": "you are logged out"})
+	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
 
 func checkLogin(c *gin.Context) *string {
