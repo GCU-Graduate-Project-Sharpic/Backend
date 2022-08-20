@@ -8,13 +8,7 @@ This is a format of the request and response of the Sharpic server.
 
 ### /user - GET
 
-#### Response
-```json
-{
-  "username": "username",
-  "email": "email@email.com",
-}
-```
+Just check the cookie.
 
 ### /user/signup - POST
 
@@ -31,7 +25,6 @@ This is a format of the request and response of the Sharpic server.
 ```json
 {
   "status": "signup success",
-  "id": "id",
 }
 ```
 
@@ -42,6 +35,7 @@ This is a format of the request and response of the Sharpic server.
 {
   "username": "username",
   "password": "password",
+  "email": " ",
 }
 ```
 
