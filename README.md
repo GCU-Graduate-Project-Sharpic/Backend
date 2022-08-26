@@ -2,7 +2,13 @@
 
 This is a backend implementation of Sharpic.
 
-# API
+## Run test Backend
+
+```zsh
+docker compose -f ./docker-compose-test.yml up --build -d
+```
+
+# User API
 
 This is a format of the request and response of the Sharpic server.
 
@@ -54,3 +60,48 @@ Just check the cookie.
   "status": "logout success",
 }
 ```
+
+# Image API
+
+### /image - POST
+
+#### Request
+
+Form-data format
+
+```json
+"images": image_file,
+"images": image_file,
+"images": image_file,
+...
+```
+
+#### Response
+
+```json
+{
+    "status": "files uploaded!"
+}
+```
+
+### /image/list - GET
+
+#### Request
+
+Just check the cookie.
+
+#### Response
+
+```json
+"list": [1, 2, 3]
+```
+
+### /image/:id - GET
+
+#### Requset
+
+Just check the cookie.
+
+#### Response
+
+`Content-Type: image/png`

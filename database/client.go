@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"mime/multipart"
 
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/GCU-Graduate-Project-Sharpic/Backend/user"
+	"github.com/GCU-Graduate-Project-Sharpic/Backend/types/image"
+	"github.com/GCU-Graduate-Project-Sharpic/Backend/types/user"
 )
 
 type Client struct {
@@ -39,7 +41,6 @@ func Dial(conf ...*Config) (*Client, error) {
 func (c *Client) InsertNewUser(
 	signupData user.User,
 ) error {
-	// Convert to password excluding \n character at the end
 	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(signupData.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
@@ -76,4 +77,71 @@ func (c *Client) FindUserByUsername(
 	}
 
 	return &userData, nil
+}
+
+func (c *Client) FindImageListByUsername(
+	username string,
+) ([]int, error) {
+	rows, err := c.db.Query(`SELECT id FROM images WHERE username=$1`, username)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var ids []int
+	for rows.Next() {
+		var id int
+		err := rows.Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, id)
+	}
+
+	return ids, nil
+}
+
+func (c *Client) FindImageByID(
+	id int,
+) (*image.Image, error) {
+	rows, err := c.db.Query(`SELECT image_name, image_file, size, sr FROM images WHERE id=$1`, id)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	image := image.Image{}
+	rows.Next()
+	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.SR)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &image, nil
+}
+
+func (c *Client) StoreImages(
+	username string,
+	headers []*multipart.FileHeader,
+) error {
+	for _, header := range headers {
+		image, err := image.FromFileHeader(header)
+		if err != nil {
+			return err
+		}
+
+		result, err := c.db.Exec(`INSERT INTO images (username, image_name, image_file, size, sr) VALUES ($1, $2, $3, $4, $5);`, username, image.Filename, image.File, image.Size, image.SR)
+		if err != nil {
+			return err
+		}
+
+		cnt, err := result.RowsAffected()
+		if err != nil && cnt != 1 {
+			return err
+		}
+		log.Println(image.Filename + "uploaded")
+	}
+
+	return nil
 }
