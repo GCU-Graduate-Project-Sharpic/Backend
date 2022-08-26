@@ -1,0 +1,28 @@
+version: '3.8'
+
+volumes:
+  user_data:
+
+services:
+  postgresql:
+    image: postgres
+    volumes:
+      - user_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: Sharpic
+      TZ: Asia/Seoul
+  
+  app:
+    build: 
+      dockerfile: ./test.Dockerfile
+    environment:
+      POSTGRES_DB: Sharpic
+      POSTGRES_HOST: postgresql
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    restart: always
+    ports:
+      - 8005:8005

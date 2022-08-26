@@ -2,6 +2,12 @@
 
 This is a backend implementation of Sharpic.
 
+## Run test Backend
+
+```zsh
+docker compose -f ./docker-compose-test.yml up --build -d
+```
+
 # User API
 
 This is a format of the request and response of the Sharpic server.
