@@ -82,7 +82,7 @@ func (c *Client) FindUserByUsername(
 func (c *Client) FindImageListByUsername(
 	username string,
 ) ([]int, error) {
-	rows, err := c.db.Query(`SELECT (id) FROM images WHERE username=$1`, username)
+	rows, err := c.db.Query(`SELECT id FROM images WHERE username=$1`, username)
 	if err != nil {
 		log.Println(err)
 	}
@@ -104,7 +104,7 @@ func (c *Client) FindImageListByUsername(
 func (c *Client) FindImageByID(
 	id int,
 ) (*image.Image, error) {
-	rows, err := c.db.Query(`SELECT (image_name, image_file, size, sr) FROM images WHERE id=$1`, id)
+	rows, err := c.db.Query(`SELECT image_name, image_file, size, sr FROM images WHERE id=$1`, id)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -124,22 +124,24 @@ func (c *Client) FindImageByID(
 func (c *Client) StoreImages(
 	username string,
 	headers []*multipart.FileHeader,
-) ([]int64, error) {
-	ids := []int64{}
+) error {
 	for _, header := range headers {
 		image, err := image.FromFileHeader(header)
-		result, err := c.db.Exec(`INSERT INTO images (username, image_name, image_file, size, sr) VALUES ($1, $2, $3, $4, $5);`, username, image.Filename, image.File, image.Size, image.SR)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		id, err := result.LastInsertId()
+		result, err := c.db.Exec(`INSERT INTO images (username, image_name, image_file, size, sr) VALUES ($1, $2, $3, $4, $5);`, username, image.Filename, image.File, image.Size, image.SR)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		ids = append(ids, id)
+
+		cnt, err := result.RowsAffected()
+		if err != nil && cnt != 1 {
+			return err
+		}
 		log.Println(image.Filename + "uploaded")
 	}
 
-	return ids, nil
+	return nil
 }

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -59,7 +58,8 @@ func (h *Handler) PostImage(c *gin.Context) {
 
 	form, _ := c.MultipartForm()
 	files := form.File["images"]
-	ids, err := h.dbClient.StoreImages(cookie, files)
+
+	err = h.dbClient.StoreImages(cookie, files)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
@@ -67,5 +67,5 @@ func (h *Handler) PostImage(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": fmt.Sprintf("%d files uploaded!", len(ids))})
+	c.JSON(http.StatusOK, gin.H{"status": "files uploaded!"})
 }

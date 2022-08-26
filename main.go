@@ -26,7 +26,7 @@ func main() {
 
 	imageApi := router.Group("/image")
 	{
-		imageApi.GET("/", handler.GetImage)
+		imageApi.GET("/:id", handler.GetImage)
 		imageApi.GET("/list", handler.GetImageList)
 		imageApi.POST("/", handler.PostImage)
 	}
