@@ -19,6 +19,12 @@ func (h *Handler) GetImage(c *gin.Context) {
 		return
 	}
 	image, err := h.dbClient.FindImageByID(id)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
 	c.Data(http.StatusOK, "image/png", image.File)
 }
 

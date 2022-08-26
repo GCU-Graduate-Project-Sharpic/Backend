@@ -24,6 +24,8 @@ func New() *Handler {
 }
 
 func (h *Handler) SessionAuth(c *gin.Context) {
+	// TODO: Using sessions library
+
 	// session := sessions.Default(c)
 	// user := session.Get("user")
 	// if user == nil {

@@ -41,7 +41,6 @@ func Dial(conf ...*Config) (*Client, error) {
 func (c *Client) InsertNewUser(
 	signupData user.User,
 ) error {
-	// Convert to password excluding \n character at the end
 	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(signupData.Password), bcrypt.DefaultCost)
 	if err != nil {
 		fmt.Println(err)
