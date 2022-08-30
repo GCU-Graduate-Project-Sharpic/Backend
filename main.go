@@ -10,12 +10,14 @@ func main() {
 	router := gin.Default()
 	handler := handler.New()
 
-	router.Use(static.Serve("/", static.LocalFile("/Frontend", true)))
+	router.Use(static.Serve("/login", static.LocalFile("/Frontend", true)))
+	router.Use(static.Serve("/signup", static.LocalFile("/Frontend", true)))
 
 	router.POST("/login", handler.PostLogin)
 	router.POST("/signup", handler.PostSignup)
 
 	router.Use(handler.SessionAuth)
+	router.Use(static.Serve("/", static.LocalFile("/Frontend", true)))
 
 	router.POST("/logout", handler.PostLogout)
 
