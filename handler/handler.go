@@ -53,7 +53,7 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	}
 
 	if user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "not logged in"})
+		c.JSON(http.StatusMovedPermanently, "/login")
 		c.Abort()
 		return
 	}
