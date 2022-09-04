@@ -65,6 +65,7 @@ func (c *Client) FindUserByUsername(
 
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	var userData user.User
@@ -85,6 +86,7 @@ func (c *Client) FindImageListByUsername(
 	rows, err := c.db.Query(`SELECT id FROM images WHERE username=$1`, username)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	var ids []int
