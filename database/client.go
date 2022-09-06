@@ -43,7 +43,7 @@ func (c *Client) InsertNewUser(
 ) error {
 	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(signupData.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return err
 	}
 
@@ -65,6 +65,7 @@ func (c *Client) FindUserByUsername(
 
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	var userData user.User
@@ -85,6 +86,7 @@ func (c *Client) FindImageListByUsername(
 	rows, err := c.db.Query(`SELECT id FROM images WHERE username=$1`, username)
 	if err != nil {
 		log.Println(err)
+		return nil, err
 	}
 
 	var ids []int
