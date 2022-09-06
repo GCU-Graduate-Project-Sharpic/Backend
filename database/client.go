@@ -43,7 +43,7 @@ func (c *Client) InsertNewUser(
 ) error {
 	encryptedPW, err := bcrypt.GenerateFromPassword([]byte(signupData.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return err
 	}
 
