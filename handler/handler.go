@@ -39,7 +39,7 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	cookie, err := c.Cookie("userId")
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.JSON(http.StatusMovedPermanently, "/login")
 		c.Abort()
 		return
 	}
@@ -47,7 +47,7 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	user, err := h.dbClient.FindUserByUsername(cookie)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.JSON(http.StatusMovedPermanently, "/login")
 		c.Abort()
 		return
 	}
