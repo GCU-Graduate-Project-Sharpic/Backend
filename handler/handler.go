@@ -31,7 +31,7 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	// user := session.Get("user")
 	// if user == nil {
 	// 	log.Println("User not logged in")
-	// 	c.Redirect(http.StatusMovedPermanently, "/login")
+	// 	c.Redirect(http.StatusFound, "/login")
 	// 	c.Abort()
 	// 	return
 	// }
@@ -39,7 +39,7 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	cookie, err := c.Cookie("userId")
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusMovedPermanently, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		c.Abort()
 		return
 	}
@@ -47,13 +47,13 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	user, err := h.dbClient.FindUserByUsername(cookie)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusMovedPermanently, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		c.Abort()
 		return
 	}
 
 	if user == nil {
-		c.JSON(http.StatusMovedPermanently, "/login")
+		c.Redirect(http.StatusFound, "/login")
 		c.Abort()
 		return
 	}
