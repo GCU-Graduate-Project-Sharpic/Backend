@@ -62,19 +62,27 @@ func (c *Client) FindUserByUsername(
 	username string,
 ) (*user.User, error) {
 	rows, err := c.db.Query(`SELECT * FROM user_list WHERE username=$1`, username)
-
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	if rows.Err() != nil {
+		log.Println(rows.Err())
+		return nil, rows.Err()
+	}
 
-	var userData user.User
+	userData := user.User{}
+
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&userData.Username, &userData.Password, &userData.Email)
 
 		if err != nil {
 			return nil, err
 		}
+	}
+	if userData.Username == "" {
+		return nil, fmt.Errorf("no such user")
 	}
 
 	return &userData, nil
