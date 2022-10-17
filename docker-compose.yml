@@ -23,6 +23,7 @@ services:
       POSTGRES_HOST: postgresql
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
+      DOMAIN: localhost
     restart: always
     ports:
       - 8005:8005

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/GCU-Graduate-Project-Sharpic/Backend/handler"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -8,7 +10,7 @@ import (
 
 func main() {
 	router := gin.Default()
-	handler := handler.New()
+	handler := handler.New(os.Getenv("DOMAIN"))
 
 	router.GET("/", handler.SessionAuth, static.Serve("/", static.LocalFile("/Frontend", true)))
 	router.Use(static.Serve("/", static.LocalFile("/Frontend", true)))
