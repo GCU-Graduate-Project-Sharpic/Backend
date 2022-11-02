@@ -46,22 +46,19 @@ func (h *Handler) SessionAuth(c *gin.Context) {
 	cookie, err := c.Cookie("userId")
 	if err != nil {
 		log.Println(err)
-		c.Redirect(http.StatusFound, "/login")
-		c.Abort()
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	user, err := h.dbClient.FindUserByUsername(cookie)
 	if err != nil {
 		log.Println(err)
-		c.Redirect(http.StatusFound, "/login")
-		c.Abort()
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if user == nil {
-		c.Redirect(http.StatusFound, "/login")
-		c.Abort()
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	c.Next()
