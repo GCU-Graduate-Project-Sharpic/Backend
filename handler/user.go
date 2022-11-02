@@ -49,12 +49,12 @@ func (h *Handler) PostLogin(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	c.SetCookie("userId", userData.Username, 3600, "/", "localhost", false, true)
+	c.SetCookie("userId", userData.Username, 3600, "/", h.domain, false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "login success"})
 }
 
 func (h *Handler) PostLogout(c *gin.Context) {
-	c.SetCookie("userId", "", -1, "/", "localhost", false, true)
+	c.SetCookie("userId", "", -1, "/", h.domain, false, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
