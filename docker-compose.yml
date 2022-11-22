@@ -15,9 +15,9 @@ services:
       POSTGRES_DB: Sharpic
       TZ: Asia/Seoul
   
-  app:
+  server:
     build: 
-      dockerfile: ./test.Dockerfile
+      dockerfile: ./Dockerfile
     environment:
       POSTGRES_DB: Sharpic
       POSTGRES_HOST: postgresql
