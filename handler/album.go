@@ -73,5 +73,5 @@ func (h *Handler) PostNewAlbum(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "insert success"})
+	c.JSON(http.StatusOK, gin.H{"status": "new album success"})
 }

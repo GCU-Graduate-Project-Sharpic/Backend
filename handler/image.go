@@ -72,5 +72,5 @@ func (h *Handler) PostNewImage(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "files uploaded!"})
+	c.JSON(http.StatusOK, gin.H{"status": "images uploaded!"})
 }
