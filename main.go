@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/GCU-Graduate-Project-Sharpic/Backend/handler"
+	"github.com/GCU-Sharpic/sharpic-server/handler"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,8 +11,8 @@ func main() {
 	router := gin.Default()
 	handler := handler.New(os.Getenv("DOMAIN"))
 
-	router.POST("/login", handler.PostLogin)
 	router.POST("/signup", handler.PostSignup)
+	router.POST("/login", handler.PostLogin)
 
 	router.Use(handler.SessionAuth)
 
@@ -23,11 +23,19 @@ func main() {
 		userApi.GET("/", handler.GetUserData)
 	}
 
+	albumApi := router.Group("/album")
+	{
+		albumApi.GET("/list", handler.GetAlbumList)
+		albumApi.GET("/:albumId", handler.GetAlbum)
+		albumApi.POST("/new", handler.PostNewAlbum)
+		// albumApi.POST("/remove/:albumId", handler.PostRemoveAlbum)
+	}
+
 	imageApi := router.Group("/image")
 	{
-		imageApi.GET("/:id", handler.GetImage)
-		imageApi.GET("/list", handler.GetImageList)
-		imageApi.POST("/", handler.PostImage)
+		imageApi.GET("/:imageId", handler.GetImage)
+		imageApi.POST("/new/:albumId/:up", handler.PostNewImage)
+		// imageApi.POST("/remove/:imageId", handler.PostRemoveImage)
 	}
 
 	router.Run(":8005")

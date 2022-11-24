@@ -1,7 +1,7 @@
 package image
 
 import (
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 )
 
@@ -9,15 +9,15 @@ type Image struct {
 	Filename string
 	File     []byte
 	Size     int64
-	SR       bool
+	UP       int
 }
 
-func FromFileHeader(header *multipart.FileHeader) (*Image, error) {
+func FromFileHeader(header *multipart.FileHeader, up int) (*Image, error) {
 	file, err := header.Open()
 	if err != nil {
 		return nil, err
 	}
-	fileData, err := ioutil.ReadAll(file)
+	fileData, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +26,6 @@ func FromFileHeader(header *multipart.FileHeader) (*Image, error) {
 		Filename: header.Filename,
 		File:     fileData,
 		Size:     header.Size,
-		SR:       false,
+		UP:       up,
 	}, nil
 }

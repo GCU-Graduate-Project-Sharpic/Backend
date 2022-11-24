@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/GCU-Graduate-Project-Sharpic/Backend/types/user"
+	"github.com/GCU-Sharpic/sharpic-server/types/user"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,7 +18,7 @@ func (h *Handler) PostSignup(c *gin.Context) {
 		return
 	}
 
-	if err := h.dbClient.InsertNewUser(*signupData); err != nil {
+	if err := h.dbClient.InsertNewUser(signupData); err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -49,18 +49,18 @@ func (h *Handler) PostLogin(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	c.SetCookie("userId", userData.Username, 3600, "/", h.domain, false, true)
+	c.SetCookie("username", userData.Username, 3600, "/", h.domain, false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "login success"})
 }
 
 func (h *Handler) PostLogout(c *gin.Context) {
-	c.SetCookie("userId", "", -1, "/", h.domain, false, true)
+	c.SetCookie("username", "", -1, "/", h.domain, false, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
 
 func (h *Handler) GetUserData(c *gin.Context) {
-	username, err := c.Cookie("userId")
+	username, err := c.Cookie("username")
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusNotAcceptable)

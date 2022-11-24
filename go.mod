@@ -1,4 +1,4 @@
-module github.com/GCU-Graduate-Project-Sharpic/Backend
+module github.com/GCU-Sharpic/sharpic-server
 
 go 1.18
 

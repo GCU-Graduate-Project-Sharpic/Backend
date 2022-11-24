@@ -9,49 +9,54 @@ import (
 )
 
 func (h *Handler) GetImage(c *gin.Context) {
-	param := c.Param("id")
-	id, err := strconv.Atoi(param)
+	param := c.Param("imageId")
+	imageId, err := strconv.Atoi(param)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
-	image, err := h.dbClient.FindImageByID(id)
+	cookie, err := c.Cookie("username")
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+
+	image, err := h.dbClient.FindImageByID(cookie, imageId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
 	c.Data(http.StatusOK, "image/png", image.File)
 }
 
-func (h *Handler) GetImageList(c *gin.Context) {
-	cookie, err := c.Cookie("userId")
+func (h *Handler) PostNewImage(c *gin.Context) {
+	param := c.Param("albumId")
+	albumId, err := strconv.Atoi(param)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+	param = c.Param("up")
+	up, err := strconv.Atoi(param)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
 
-	list, err := h.dbClient.FindImageListByUsername(cookie)
+	cookie, err := c.Cookie("username")
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"list": list})
-}
-
-func (h *Handler) PostImage(c *gin.Context) {
-	cookie, err := c.Cookie("userId")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
@@ -59,10 +64,10 @@ func (h *Handler) PostImage(c *gin.Context) {
 	form, _ := c.MultipartForm()
 	files := form.File["images"]
 
-	err = h.dbClient.StoreImages(cookie, files)
+	err = h.dbClient.InsertImages(cookie, albumId, up, files)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error"})
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
