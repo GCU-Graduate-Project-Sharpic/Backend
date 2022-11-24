@@ -8,15 +8,17 @@ This is a backend implementation of Sharpic.
 docker compose -f ./docker-compose-test.yml up --build -d
 ```
 
-# User API
+# API
 
 This is a format of the request and response of the Sharpic server.
 
-### /user - GET
+## Authentication API
 
-Just check the cookie.
+To make a request to sharpic-server, you must first log in.<br>
+Below are the APIs related to login.
 
-### /user/signup - POST
+
+### /signup - POST
 
 #### Request
 ```json
@@ -34,7 +36,7 @@ Just check the cookie.
 }
 ```
 
-### /user/login - POST
+### /login - POST
 
 #### Request
 ```json
@@ -52,7 +54,7 @@ Just check the cookie.
 }
 ```
 
-### /user/logout - POST
+### /logout - POST
 
 #### Response
 ```json
@@ -61,9 +63,84 @@ Just check the cookie.
 }
 ```
 
-# Image API
+## User API
 
-### /image - POST
+Provides functions related to user information.
+
+### /user - GET
+
+#### Request 
+
+Just check the cookie.
+
+##### Response
+```json
+{
+  "username": "username",
+  "email": "email@email.com",
+}
+```
+
+## Album API
+
+### /album/list - GET
+
+#### Request
+
+Just check the cookie.
+
+##### Response
+```json
+{
+  "list": [],
+}
+```
+
+### /album/:albumId - GET
+
+#### Request
+
+Just check the cookie and the url param.
+
+##### Response
+```json
+{
+  "username": "username",
+  "title": "title",
+  "imageIds": [],
+}
+```
+
+### /album/new - POST
+
+#### Request
+```json
+{
+  "username": "username",
+  "title": "title",
+}
+```
+
+#### Response
+```json
+{
+  "status": "new album success",
+}
+```
+
+## Image API
+
+### /image/:imageId - GET
+
+#### Requset
+
+Just check the cookie.
+
+#### Response
+
+`Content-Type: image/png`
+
+### /image/new/:albumId/:up - POST
 
 #### Request
 
@@ -80,28 +157,6 @@ Form-data format
 
 ```json
 {
-    "status": "files uploaded!"
+    "status": "images uploaded!"
 }
 ```
-
-### /image/list - GET
-
-#### Request
-
-Just check the cookie.
-
-#### Response
-
-```json
-"list": [1, 2, 3]
-```
-
-### /image/:id - GET
-
-#### Requset
-
-Just check the cookie.
-
-#### Response
-
-`Content-Type: image/png`
