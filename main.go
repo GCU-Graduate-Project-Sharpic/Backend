@@ -34,6 +34,8 @@ func main() {
 	imageApi := router.Group("/image")
 	{
 		imageApi.GET("/:imageId", handler.GetImage)
+		imageApi.GET("/processed/:imageId", handler.GetProcessedImage)
+		imageApi.GET("/info/:imageId", handler.GetImageInfo)
 		imageApi.POST("/new/:albumId/:up", handler.PostNewImage)
 		// imageApi.POST("/remove/:imageId", handler.PostRemoveImage)
 	}

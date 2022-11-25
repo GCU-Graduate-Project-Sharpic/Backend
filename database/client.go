@@ -172,7 +172,7 @@ func (c *Client) FindImageByID(
 	username string,
 	id int,
 ) (*image.Image, error) {
-	rows, err := c.db.Query(`SELECT image_name, image_file, size, up FROM image WHERE username=$1 AND id=$2;`, username, id)
+	rows, err := c.db.Query(`SELECT image_name, image_file, size, added_date, up FROM image WHERE username=$1 AND id=$2;`, username, id)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -180,7 +180,28 @@ func (c *Client) FindImageByID(
 
 	image := image.Image{}
 	rows.Next()
-	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.UP)
+	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.AddedDate, &image.UP)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &image, nil
+}
+
+func (c *Client) FindProcessedImageByID(
+	username string,
+	id int,
+) (*image.Image, error) {
+	rows, err := c.db.Query(`SELECT image_name, image_file, size, added_date, up FROM processed_image WHERE username=$1 AND id=$2;`, username, id)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	image := image.Image{}
+	rows.Next()
+	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.AddedDate, &image.UP)
 	if err != nil {
 		log.Println(err)
 		return nil, err

@@ -27,8 +27,25 @@ CREATE TABLE image (
     ... 
     */
     up int NOT NULL,
-    status int NOT NULL DEFAULT 0
 );
+
+CREATE TABLE processed_image (
+    id int PRIMARY KEY REFERENCES image(id),
+    username VARCHAR(30) REFERENCES user_account,
+    image_name VARCHAR(100) NOT NULL,
+    image_file bytea NOT NULL,
+    size int NOT NULL,
+    added_date timestamp DEFAULT Now(),
+
+    /*
+    Specify the image upgrade method by integer
+    0: normal (non sr)
+    1: image SR
+    2: image recovery
+    ... 
+    */
+    up int NOT NULL,
+)
 
 CREATE TABLE album_image (
     album_id int NOT NULL REFERENCES album(id),

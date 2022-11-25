@@ -3,13 +3,15 @@ package image
 import (
 	"io"
 	"mime/multipart"
+	"time"
 )
 
 type Image struct {
-	Filename string
-	File     []byte
-	Size     int64
-	UP       int
+	Filename  string
+	File      []byte
+	Size      int64
+	AddedDate time.Time
+	UP        int
 }
 
 func FromFileHeader(header *multipart.FileHeader, up int) (*Image, error) {

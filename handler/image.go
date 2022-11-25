@@ -28,11 +28,70 @@ func (h *Handler) GetImage(c *gin.Context) {
 	image, err := h.dbClient.FindImageByID(cookie, imageId)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.JSON(http.StatusNotFound, gin.H{"status": "error"})
 		c.Abort()
 		return
 	}
 	c.Data(http.StatusOK, "image/png", image.File)
+}
+
+func (h *Handler) GetProcessedImage(c *gin.Context) {
+	param := c.Param("imageId")
+	imageId, err := strconv.Atoi(param)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+	cookie, err := c.Cookie("username")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+
+	image, err := h.dbClient.FindProcessedImageByID(cookie, imageId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+	c.Data(http.StatusOK, "image/png", image.File)
+}
+
+func (h *Handler) GetImageInfo(c *gin.Context) {
+	param := c.Param("imageId")
+	imageId, err := strconv.Atoi(param)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+	cookie, err := c.Cookie("username")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+
+	image, err := h.dbClient.FindImageByID(cookie, imageId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
+		c.Abort()
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"fileName":   image.Filename,
+		"size":       image.Size,
+		"added_date": image.AddedDate,
+		"up":         image.UP,
+	})
 }
 
 func (h *Handler) PostNewImage(c *gin.Context) {
