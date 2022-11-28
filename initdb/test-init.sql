@@ -26,7 +26,7 @@ CREATE TABLE image (
     2: image recovery
     ... 
     */
-    up int NOT NULL,
+    up int NOT NULL
 );
 
 CREATE TABLE processed_image (
@@ -44,8 +44,8 @@ CREATE TABLE processed_image (
     2: image recovery
     ... 
     */
-    up int NOT NULL,
-)
+    up int NOT NULL
+);
 
 CREATE TABLE album_image (
     album_id int NOT NULL REFERENCES album(id),
