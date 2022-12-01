@@ -1,8 +1,6 @@
 package album
 
 import (
-	"encoding/json"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,12 +16,4 @@ func NewShouldBindJSON(c *gin.Context) (*Album, error) {
 		return nil, err
 	}
 	return &new, nil
-}
-
-func (a *Album) JSON() ([]byte, error) {
-	encodedAlbum, err := json.MarshalIndent(a, "", " ")
-	if err != nil {
-		return nil, err
-	}
-	return encodedAlbum, nil
 }

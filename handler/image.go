@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -55,8 +57,10 @@ func (h *Handler) GetProcessedImage(c *gin.Context) {
 	image, err := h.dbClient.FindProcessedImageByID(cookie, imageId)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusNotFound, gin.H{"status": "error"})
-		c.Abort()
+
+		img, _ := os.Open("./assets/processing.png")
+		imgData, _ := io.ReadAll(img)
+		c.Data(http.StatusOK, "image/png", imgData)
 		return
 	}
 	c.Data(http.StatusOK, "image/png", image.File)

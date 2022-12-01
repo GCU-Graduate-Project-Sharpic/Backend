@@ -22,7 +22,7 @@ func main() {
 
 		userApi := api.Group("/user")
 		{
-			userApi.GET("/", handler.GetUserData)
+			userApi.GET("", handler.GetUserData)
 		}
 
 		albumApi := api.Group("/album")

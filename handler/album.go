@@ -47,16 +47,7 @@ func (h *Handler) GetAlbum(c *gin.Context) {
 		return
 	}
 
-	encodedAlbum, err := album.JSON()
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
-
-	// json 반환 되는지 확인 필요. 안되면 gin.H{"response": encodedAlbum} 시도하기
-	c.JSON(http.StatusOK, string(encodedAlbum))
+	c.JSON(http.StatusOK, album)
 }
 
 func (h *Handler) PostNewAlbum(c *gin.Context) {
