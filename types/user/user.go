@@ -11,8 +11,7 @@ type User struct {
 }
 
 func NewShouldBindJSON(c *gin.Context) (*User, error) {
-	var new User
-
+	new := User{}
 	if err := c.ShouldBindJSON(&new); err != nil {
 		return nil, err
 	}
