@@ -111,14 +111,14 @@ func (c *Client) InsertNewAlbum(
 
 func (c *Client) FindAlbumListByUsername(
 	username string,
-) ([]int, error) {
+) ([]*album.Album, error) {
 	rows, err := c.db.Query(`SELECT id FROM album WHERE username=$1`, username)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	ids := []int{}
+	albums := []*album.Album{}
 	for rows.Next() {
 		id := 0
 		err := rows.Scan(&id)
@@ -126,11 +126,18 @@ func (c *Client) FindAlbumListByUsername(
 			log.Println(err)
 			return nil, err
 		}
+		album, err := c.FindAlbumByID(id)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
 
-		ids = append(ids, id)
+		album.Id = id
+
+		albums = append(albums, album)
 	}
 
-	return ids, nil
+	return albums, nil
 }
 
 func (c *Client) FindAlbumByID(
