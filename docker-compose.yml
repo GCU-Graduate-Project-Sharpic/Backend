@@ -15,15 +15,14 @@ services:
       POSTGRES_DB: Sharpic
       TZ: Asia/Seoul
   
-  app:
+  server:
     build: 
-      dockerfile: ./test.Dockerfile
+      dockerfile: ./Dockerfile
     environment:
       POSTGRES_DB: Sharpic
       POSTGRES_HOST: postgresql
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-      DOMAIN: localhost
     restart: always
     ports:
       - 8005:8005
