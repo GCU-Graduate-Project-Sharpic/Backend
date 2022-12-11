@@ -5,6 +5,7 @@ import (
 )
 
 type Album struct {
+	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Title    string `json:"title"`
 	ImageIds []int  `json:"imageIds"`
