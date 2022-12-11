@@ -295,5 +295,17 @@ func (c *Client) UpdateImageUp(
 		return err
 	}
 
+	result, err = c.db.Exec(`DELETE FROM processed_image WHERE username=$1 AND id=$2;`, username, imageId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	cnt, err = result.RowsAffected()
+	if err != nil && cnt != 1 {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
