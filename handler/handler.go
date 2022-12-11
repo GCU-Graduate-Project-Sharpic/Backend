@@ -8,22 +8,16 @@ import (
 
 type Handler struct {
 	dbClient *database.Client
-	domain   string
 }
 
-func New(domain string) *Handler {
+func New() *Handler {
 	dbClient, err := database.Dial()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	if domain == "" {
-		domain = "localhost"
-	}
-
 	return &Handler{
 		dbClient: dbClient,
-		domain:   domain,
 	}
 }

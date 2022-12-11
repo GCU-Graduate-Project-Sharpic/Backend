@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -49,12 +48,12 @@ func (h *Handler) PostLogin(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	c.SetCookie("username", userData.Username, 3600, "/", h.domain, false, true)
+	c.SetCookie("username", userData.Username, 3600, "/", c.Request.Host, false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "login success"})
 }
 
 func (h *Handler) PostLogout(c *gin.Context) {
-	c.SetCookie("username", "", -1, "/", h.domain, false, true)
+	c.SetCookie("username", "", -1, "/", c.Request.Host, false, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
@@ -74,12 +73,12 @@ func (h *Handler) GetUserData(c *gin.Context) {
 		return
 	}
 
-	data, err := json.Marshal(userData)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(http.StatusNotAcceptable)
-		return
-	}
+	// data, err := json.Marshal(userData)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	c.AbortWithStatus(http.StatusNotAcceptable)
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, string(data))
+	c.JSON(http.StatusOK, userData)
 }

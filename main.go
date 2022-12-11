@@ -1,15 +1,13 @@
 package main
 
 import (
-	"os"
-
 	"github.com/GCU-Sharpic/sharpic-server/handler"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
-	handler := handler.New(os.Getenv("DOMAIN"))
+	handler := handler.New()
 
 	api := router.Group("/api")
 	{
@@ -38,7 +36,8 @@ func main() {
 			imageApi.GET("/:imageId", handler.GetImage)
 			imageApi.GET("/processed/:imageId", handler.GetProcessedImage)
 			imageApi.GET("/info/:imageId", handler.GetImageInfo)
-			imageApi.POST("/new/:albumId/:up", handler.PostNewImage)
+			imageApi.POST("/new/:albumId", handler.PostNewImage)
+			imageApi.PATCH("/up/:imageId/:newUp", handler.PatchImageUp)
 			// imageApi.POST("/remove/:imageId", handler.PostRemoveImage)
 		}
 	}

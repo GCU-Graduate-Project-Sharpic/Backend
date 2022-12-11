@@ -72,30 +72,25 @@ func (c *Client) InsertNewUser(
 func (c *Client) FindUserByUsername(
 	username string,
 ) (*user.User, error) {
-	rows, err := c.db.Query(`SELECT * FROM user_account WHERE username=$1`, username)
-	if err != nil {
+	userData := user.User{}
+	err := c.db.QueryRow(
+		`SELECT * FROM user_account WHERE username=$1`,
+		username,
+	).Scan(
+		&userData.Username,
+		&userData.Password,
+		&userData.Email,
+	)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("no such user")
+	} else if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	if rows.Err() != nil {
-		log.Println(rows.Err())
-		return nil, rows.Err()
-	}
 
-	userData := user.User{}
-
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&userData.Username, &userData.Password, &userData.Email)
-
-		if err != nil {
-			log.Println(err)
-			return nil, err
-		}
-	}
-	if userData.Username == "" {
-		return nil, fmt.Errorf("no such user")
-	}
+	// if userData.Username == "" {
+	// 	return nil, fmt.Errorf("no such user")
+	// }
 
 	return &userData, nil
 }
@@ -139,19 +134,19 @@ func (c *Client) FindAlbumListByUsername(
 }
 
 func (c *Client) FindAlbumByID(
-	id int,
+	albumId int,
 ) (*album.Album, error) {
 	album := album.Album{}
-	err := c.db.QueryRow(`SELECT username, title FROM album WHERE id=$1;`, id).Scan(&album.Username, &album.Title)
+	err := c.db.QueryRow(`SELECT username, title FROM album WHERE id=$1;`, albumId).Scan(&album.Username, &album.Title)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return nil, err
 	}
 
 	album.ImageIds = []int{}
-	rows, err := c.db.Query(`SELECT image_id FROM album_image WHERE album_id=$1;`, id)
+	rows, err := c.db.Query(`SELECT image_id FROM album_image WHERE album_id=$1;`, albumId)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return nil, err
 	}
 
@@ -159,7 +154,7 @@ func (c *Client) FindAlbumByID(
 		id := 0
 		err := rows.Scan(&id)
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 			return nil, err
 		}
 
@@ -170,17 +165,20 @@ func (c *Client) FindAlbumByID(
 
 func (c *Client) FindImageByID(
 	username string,
-	id int,
+	imageId int,
 ) (*image.Image, error) {
-	rows, err := c.db.Query(`SELECT image_name, image_file, size, added_date, up FROM image WHERE username=$1 AND id=$2;`, username, id)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
 	image := image.Image{}
-	rows.Next()
-	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.AddedDate, &image.UP)
+	err := c.db.QueryRow(
+		`SELECT image_name, image_file, size, added_date, up FROM image WHERE username=$1 AND id=$2;`,
+		username,
+		imageId,
+	).Scan(
+		&image.Filename,
+		&image.File,
+		&image.Size,
+		&image.AddedDate,
+		&image.UP,
+	)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -193,15 +191,18 @@ func (c *Client) FindProcessedImageByID(
 	username string,
 	id int,
 ) (*image.Image, error) {
-	rows, err := c.db.Query(`SELECT image_name, image_file, size, added_date, up FROM processed_image WHERE username=$1 AND id=$2;`, username, id)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
 	image := image.Image{}
-	rows.Next()
-	err = rows.Scan(&image.Filename, &image.File, &image.Size, &image.AddedDate, &image.UP)
+	err := c.db.QueryRow(
+		`SELECT image_name, image_file, size, added_date, up FROM processed_image WHERE username=$1 AND id=$2;`,
+		username,
+		id,
+	).Scan(
+		&image.Filename,
+		&image.File,
+		&image.Size,
+		&image.AddedDate,
+		&image.UP,
+	)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -224,7 +225,14 @@ func (c *Client) InsertImages(
 		}
 
 		imageId := 0
-		err = c.db.QueryRow(`INSERT INTO image (username, image_name, image_file, size, up) VALUES ($1, $2, $3, $4, $5) RETURNING id;`, username, image.Filename, image.File, image.Size, image.UP).Scan(&imageId)
+		err = c.db.QueryRow(
+			`INSERT INTO image (username, image_name, image_file, size, up) VALUES ($1, $2, $3, $4, $5) RETURNING id;`,
+			username,
+			image.Filename,
+			image.File,
+			image.Size,
+			image.UP,
+		).Scan(&imageId)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -237,7 +245,11 @@ func (c *Client) InsertImages(
 		// 	return err
 		// }
 
-		result, err := c.db.Exec(`INSERT INTO album_image (album_id, image_id) VALUES ((SELECT id FROM album WHERE username=$1 AND title='default'), $2);`, username, imageId)
+		result, err := c.db.Exec(
+			`INSERT INTO album_image (album_id, image_id) VALUES ((SELECT id FROM album WHERE username=$1 AND title='default'), $2);`,
+			username,
+			imageId,
+		)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -261,6 +273,26 @@ func (c *Client) InsertImages(
 			}
 		}
 		log.Println(image.Filename + "uploaded")
+	}
+
+	return nil
+}
+
+func (c *Client) UpdateImageUp(
+	username string,
+	imageId int,
+	up int,
+) error {
+	result, err := c.db.Exec(`UPDATE image SET up=$1 WHERE username=$2 AND id=$3;`, up, username, imageId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	cnt, err := result.RowsAffected()
+	if err != nil && cnt != 1 {
+		log.Println(err)
+		return err
 	}
 
 	return nil
