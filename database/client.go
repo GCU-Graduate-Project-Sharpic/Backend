@@ -246,14 +246,14 @@ func (c *Client) InsertImages(
 		}
 
 		// defaultId := 0
-		// err = c.db.QueryRow(`SELECT id FROM album WHERE username=$1 AND title=$2;`, username, "default").Scan(&defaultId)
+		// err = c.db.QueryRow(`SELECT id FROM album WHERE username=$1 AND title=$2;`, username, "All Images").Scan(&defaultId)
 		// if err != nil {
 		// 	log.Println(err)
 		// 	return err
 		// }
 
 		result, err := c.db.Exec(
-			`INSERT INTO album_image (album_id, image_id) VALUES ((SELECT id FROM album WHERE username=$1 AND title='default'), $2);`,
+			`INSERT INTO album_image (album_id, image_id) VALUES ((SELECT id FROM album WHERE username=$1 AND title='All Images'), $2);`,
 			username,
 			imageId,
 		)
