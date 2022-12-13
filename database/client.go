@@ -57,7 +57,7 @@ func (c *Client) InsertNewUser(
 		log.Println(err)
 		return err
 	}
-	result, err = c.db.Exec(`INSERT INTO album (username, title) VALUES ($1, 'default');`, signupData.Username)
+	result, err = c.db.Exec(`INSERT INTO album (username, title) VALUES ($1, 'All Images');`, signupData.Username)
 	if err != nil {
 		log.Println(err)
 		return err
