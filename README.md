@@ -2,6 +2,8 @@
 
 This is a backend implementation of Sharpic.
 
+To use full sharpic service, see [sharpic](https://github.com/GCU-Sharpic/sharpic)
+
 ## Run test Backend
 
 ```zsh
@@ -71,7 +73,7 @@ Provides functions related to user information.
 
 #### Request 
 
-Just check the cookie.
+Check `userId` in cookie.
 
 ##### Response
 ```json
@@ -87,12 +89,19 @@ Just check the cookie.
 
 #### Request
 
-Just check the cookie.
+Check `userId` in cookie.
 
 ##### Response
 ```json
 {
-  "list": [],
+  "list": [
+    {
+      "id": "int",
+      "username": "username",
+      "title": "title",
+      "imageIds": "[]int",
+    }
+  ],
 }
 ```
 
@@ -100,14 +109,14 @@ Just check the cookie.
 
 #### Request
 
-Just check the cookie and the url param.
+Check `userId` in cookie.
 
 ##### Response
 ```json
 {
   "username": "username",
   "title": "title",
-  "imageIds": [],
+  "imageIds": "[]int",
 }
 ```
 
@@ -134,13 +143,41 @@ Just check the cookie and the url param.
 
 #### Requset
 
-Just check the cookie.
+Check `userId` in cookie.
 
 #### Response
 
 `Content-Type: image/png`
 
-### /image/new/:albumId/:up - POST
+### /image/processed/:imageId - GET
+
+#### Requset
+
+Check `userId` in cookie.
+
+#### Response
+
+`Content-Type: image/png`
+
+### /image/info/:imageId - GET
+
+#### Requset
+
+Check `userId` in cookie.
+
+#### Response
+
+```json
+{
+  "fileName":   "string",
+  "size":       "int64",
+  "added_date": "time.Time",
+  "up":         "int",
+  "status":     "bool",
+}
+```
+
+### /image/new/:albumId - POST
 
 #### Request
 
@@ -158,5 +195,19 @@ Form-data format
 ```json
 {
     "status": "images uploaded!"
+}
+```
+
+### /image/up/:imageId/:newUp - PATCH
+
+#### Request
+
+Just check the cookie.
+
+#### Response
+
+```json
+{
+    "status": "up changed"
 }
 ```
