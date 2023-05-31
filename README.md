@@ -2,6 +2,8 @@
 
 This is a backend implementation of Sharpic.
 
+The sharpic server manages user account information and provides login logout API. And by providing album and image api, it serves as a relay so that users can upload images to the database and super resolution processing can operate.
+
 To use full sharpic service, see [sharpic](https://github.com/GCU-Sharpic/sharpic)
 
 ## Run test Backend
@@ -10,15 +12,41 @@ To use full sharpic service, see [sharpic](https://github.com/GCU-Sharpic/sharpi
 docker compose -f ./docker-compose-test.yml up --build -d
 ```
 
-# API
+# Structure
+
+![Screenshot from 2023-05-31 16-36-46](https://github.com/GCU-Sharpic/sharpic-server/assets/20539422/b3585f46-5507-43a7-b2d9-99cd5b2bb8b6)
+
+The overall process of sharpic server is as above. Below are the modules of sharpic server.
+
+`main.go` : API paths are defined and appropriate handlers are called.
+
+`/handler` : Parse the json data and do whatever you need. If you need to call the DB, call the database module.
+
+`/database` : Connects the database and provides necessary functionality.
+
+`/type`: Data types used in sharpic server are defined.
+
+# APIs
 
 This is a format of the request and response of the Sharpic server.
+
+- [/singup - POST](#signup---post)
+- [/login - POST](#login---post)
+- [/logout - POST](#logout---post)
+- [/user - GET](#user---get)
+- [/album/list - GET](#albumlist---get)
+- [/album/:albumId - GET](#albumalbumid---get)
+- [/album/new - POST](#albumnew---post)
+- [/image/:imageId - GET](#imageimageid---get)
+- [/image/processed/:imageId - GET](#imageprocessedimageid---get)
+- [/image/info/:imageId - GET](#imageinfoimageid---get)
+- [/image/new/:albumId - POST](#imagenewalbumid---post)
+- [/image/up/:imageId/:newUp - PATCH](#imageupimageidnewup---patch)
 
 ## Authentication API
 
 To make a request to sharpic-server, you must first log in.<br>
 Below are the APIs related to login.
-
 
 ### /signup - POST
 
