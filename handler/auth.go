@@ -27,13 +27,6 @@ func (h *Handler) Auth(c *gin.Context) {
 		return
 	}
 
-	err = h.tokenManager.TokenValid(tokenString)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
 	username, err := h.tokenManager.ExtractTokenUsername(tokenString)
 	if err != nil {
 		log.Println(err)
