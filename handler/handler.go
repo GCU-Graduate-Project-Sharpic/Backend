@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/GCU-Sharpic/sharpic-server/database"
-	"github.com/GCU-Sharpic/sharpic-server/types/token"
+	"github.com/GCU-Sharpic/sharpic-server/utils/token"
 )
 
 type Handler struct {
