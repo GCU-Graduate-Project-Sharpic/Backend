@@ -2,7 +2,6 @@ package token
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -27,7 +26,7 @@ func (t *Token) GenerateToken(username string) (string, error) {
 		},
 	})
 
-	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+	return token.SignedString([]byte(t.SecretKey))
 }
 
 func (t *Token) TokenValid(tokenString string) error {
