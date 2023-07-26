@@ -18,15 +18,10 @@ func (h *Handler) GetImage(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
 
-	image, err := h.dbClient.FindImageByID(cookie, imageId)
+	username := c.Param("username")
+
+	image, err := h.dbClient.FindImageByID(username, imageId)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{"status": "error"})
@@ -45,15 +40,10 @@ func (h *Handler) GetProcessedImage(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
 
-	image, err := h.dbClient.FindProcessedImageByID(cookie, imageId)
+	username := c.Param("username")
+
+	image, err := h.dbClient.FindProcessedImageByID(username, imageId)
 	if err != nil {
 		log.Println(err)
 
@@ -75,15 +65,10 @@ func (h *Handler) GetImageInfo(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Fatal(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
 
-	image, err := h.dbClient.FindImageByID(cookie, imageId)
+	username := c.Param("username")
+
+	image, err := h.dbClient.FindImageByID(username, imageId)
 	if err != nil {
 		log.Fatal(err)
 		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
@@ -92,7 +77,7 @@ func (h *Handler) GetImageInfo(c *gin.Context) {
 	}
 
 	status := false
-	processedImage, err := h.dbClient.FindProcessedImageByID(cookie, imageId)
+	processedImage, err := h.dbClient.FindProcessedImageByID(username, imageId)
 	if err == sql.ErrNoRows {
 		log.Println("No processed image")
 		status = false
@@ -123,18 +108,13 @@ func (h *Handler) PostNewImage(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
+
+	username := c.Param("username")
 
 	form, _ := c.MultipartForm()
 	files := form.File["images"]
 
-	err = h.dbClient.InsertImages(cookie, albumId, -1, files)
+	err = h.dbClient.InsertImages(username, albumId, -1, files)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
@@ -165,15 +145,10 @@ func (h *Handler) PatchImageUp(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
 
-	err = h.dbClient.UpdateImageUp(cookie, imageId, newUp)
+	username := c.Param("username")
+
+	err = h.dbClient.UpdateImageUp(username, imageId, newUp)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusForbidden, gin.H{"status": "error"})

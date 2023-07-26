@@ -43,7 +43,7 @@ func (t *Token) TokenValid(tokenString string) error {
 }
 
 func (t *Token) ExtractTokenUsername(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -56,5 +56,5 @@ func (t *Token) ExtractTokenUsername(tokenString string) (string, error) {
 	if claims, ok := token.Claims.(*tokenClaims); ok && token.Valid {
 		return claims.Username, nil
 	}
-	return "", nil
+	return "", fmt.Errorf("invalid token")
 }

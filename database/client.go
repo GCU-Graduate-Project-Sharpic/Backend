@@ -87,11 +87,6 @@ func (c *Client) FindUserByUsername(
 		log.Println(err)
 		return nil, err
 	}
-
-	// if userData.Username == "" {
-	// 	return nil, fmt.Errorf("no such user")
-	// }
-
 	return &userData, nil
 }
 func (c *Client) InsertNewAlbum(

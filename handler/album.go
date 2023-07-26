@@ -10,15 +10,9 @@ import (
 )
 
 func (h *Handler) GetAlbumList(c *gin.Context) {
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
+	username := c.Param("username")
 
-	albumList, err := h.dbClient.FindAlbumListByUsername(cookie)
+	albumList, err := h.dbClient.FindAlbumListByUsername(username)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
@@ -58,13 +52,7 @@ func (h *Handler) PostNewAlbum(c *gin.Context) {
 		return
 	}
 
-	newAlbum.Username, err = c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusForbidden, gin.H{"status": "error"})
-		c.Abort()
-		return
-	}
+	newAlbum.Username = c.Param("username")
 
 	if err := h.dbClient.InsertNewAlbum(newAlbum); err != nil {
 		log.Println(err)

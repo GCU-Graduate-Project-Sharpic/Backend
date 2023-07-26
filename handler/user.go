@@ -65,33 +65,13 @@ func (h *Handler) PostLogout(c *gin.Context) {
 }
 
 func (h *Handler) GetUserData(c *gin.Context) {
-	tokenString, err := c.Cookie("token")
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(http.StatusForbidden)
-		return
-	}
-
-	username, err := h.tokenManager.ExtractTokenUsername(tokenString)
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(http.StatusForbidden)
-		return
-	}
+	username := c.Param("username")
 
 	userData, err := h.dbClient.FindUserByUsername(username)
 	if err != nil {
 		log.Println(err)
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
-	// data, err := json.Marshal(userData)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	c.AbortWithStatus(http.StatusNotAcceptable)
-	// 	return
-	// }
-
 	c.JSON(http.StatusOK, userData)
 }
