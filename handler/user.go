@@ -43,42 +43,35 @@ func (h *Handler) PostLogin(c *gin.Context) {
 
 	// compare password with sotred password
 	bcryptErr := bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(loginData.Password))
-
 	if loginData.Username != userData.Username || bcryptErr != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	c.SetCookie("username", userData.Username, 3600, "/", c.Request.Host, false, true)
+
+	tokenString, err := h.tokenManager.GenerateToken(userData.Username)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.SetCookie("token", tokenString, 3600, "/", c.Request.Host, false, true)
 	c.JSON(http.StatusOK, gin.H{"status": "login success"})
 }
 
 func (h *Handler) PostLogout(c *gin.Context) {
-	c.SetCookie("username", "", -1, "/", c.Request.Host, false, true)
+	c.SetCookie("token", "", -1, "/", c.Request.Host, false, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "logout success"})
 }
 
 func (h *Handler) GetUserData(c *gin.Context) {
-	username, err := c.Cookie("username")
-	if err != nil {
-		log.Println(err)
-		c.AbortWithStatus(http.StatusNotAcceptable)
-		return
-	}
+	username := c.Param("username")
 
 	userData, err := h.dbClient.FindUserByUsername(username)
 	if err != nil {
 		log.Println(err)
-		c.AbortWithStatus(http.StatusNotFound)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-
-	// data, err := json.Marshal(userData)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	c.AbortWithStatus(http.StatusNotAcceptable)
-	// 	return
-	// }
-
 	c.JSON(http.StatusOK, userData)
 }

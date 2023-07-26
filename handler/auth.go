@@ -7,36 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) SessionAuth(c *gin.Context) {
-
-	// TODO: Using sessions library
-
-	// session := sessions.Default(c)
-	// user := session.Get("user")
-	// if user == nil {
-	// 	log.Println("User not logged in")
-	// 	c.Redirect(http.StatusFound, "/login")
-	// 	c.Abort()
-	// 	return
-	// }
-
-	cookie, err := c.Cookie("username")
+func (h *Handler) Auth(c *gin.Context) {
+	tokenString, err := c.Cookie("token")
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	user, err := h.dbClient.FindUserByUsername(cookie)
+	username, err := h.tokenManager.ExtractTokenUsername(tokenString)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	if user == nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
+	c.AddParam("username", username)
 	c.Next()
 }

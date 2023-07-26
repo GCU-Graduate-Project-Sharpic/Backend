@@ -14,7 +14,7 @@ func main() {
 		api.POST("/signup", handler.PostSignup)
 		api.POST("/login", handler.PostLogin)
 
-		api.Use(handler.SessionAuth)
+		api.Use(handler.Auth)
 
 		api.POST("/logout", handler.PostLogout)
 
