@@ -8,21 +8,53 @@ services:
     image: postgres
     volumes:
       - user_data:/var/lib/postgresql/data
-      - ./initdb:/docker-entrypoint-initdb.d
+      - ./server/initdb:/docker-entrypoint-initdb.d
     restart: always
     environment:
-      POSTGRES_PASSWORD: secret
+      POSTGRES_PASSWORD: sharpgcu75!!
       POSTGRES_DB: Sharpic
       TZ: Asia/Seoul
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   
   server:
     build: 
+      context: ./server
       dockerfile: ./Dockerfile
     environment:
       POSTGRES_DB: Sharpic
       POSTGRES_HOST: postgresql
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+      POSTGRES_PASSWORD: sharpgcu75!!
+      JWT_TOKEN_LIFESPAN: 6
+      JWT_SECRET: sharpgcu75!!
+      MINIO_HOST: minio:9000
+      MINIO_ACCESS_ID: minio
+      MINIO_ACCESS_PW: sharpgcu75!!
     restart: always
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: sharpgcu75!!
     ports:
-      - 8005:8005
+      - 9000:9000 
+      - 9001:9001
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always

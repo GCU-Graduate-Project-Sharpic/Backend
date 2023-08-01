@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/GCU-Sharpic/sharpic-server/handler"
 	"github.com/gin-gonic/gin"
 )
@@ -8,6 +10,10 @@ import (
 func main() {
 	router := gin.Default()
 	handler := handler.New()
+	if handler == nil {
+		log.Println("Failed to initialize handler")
+		return
+	}
 
 	api := router.Group("/api")
 	{
