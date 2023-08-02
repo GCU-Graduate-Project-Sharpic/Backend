@@ -15,7 +15,7 @@ CREATE TABLE image (
     id SERIAL PRIMARY KEY,
     username VARCHAR(30) REFERENCES user_account,
     image_name VARCHAR(100) NOT NULL,
-    image_file bytea NOT NULL,
+    image_hash CHAR(64) NOT NULL,
     size int NOT NULL,
     added_date timestamp DEFAULT Now(),
 
@@ -33,7 +33,7 @@ CREATE TABLE processed_image (
     id int PRIMARY KEY REFERENCES image(id),
     username VARCHAR(30) REFERENCES user_account,
     image_name VARCHAR(100) NOT NULL,
-    image_file bytea NOT NULL,
+    image_hash CHAR(64) NOT NULL,
     size int NOT NULL,
     added_date timestamp DEFAULT Now(),
 

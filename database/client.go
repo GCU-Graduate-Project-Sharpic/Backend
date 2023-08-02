@@ -12,11 +12,13 @@ import (
 	"github.com/GCU-Sharpic/sharpic-server/types/album"
 	"github.com/GCU-Sharpic/sharpic-server/types/image"
 	"github.com/GCU-Sharpic/sharpic-server/types/user"
+	"github.com/GCU-Sharpic/sharpic-server/utils/minio"
 )
 
 type Client struct {
 	config *Config
 	db     *sql.DB
+	minio  *minio.Client
 }
 
 // Dial creates an instance of Client and dials the given postgresql.
@@ -33,9 +35,22 @@ func Dial(conf ...*Config) (*Client, error) {
 		return nil, err
 	}
 
+	minioClient, err := minio.Dial(conf[0].MinioConfig.Host, conf[0].MinioConfig.AccessID, conf[0].MinioConfig.AccessPW, conf[0].MinioConfig.useSSL)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	err = minioClient.MakeBucketIfNotExists("images")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
 	return &Client{
 		config: conf[0],
 		db:     db,
+		minio:  minioClient,
 	}, nil
 }
 
@@ -171,16 +186,22 @@ func (c *Client) FindImageByID(
 ) (*image.Image, error) {
 	image := image.Image{}
 	err := c.db.QueryRow(
-		`SELECT image_name, image_file, size, added_date, up FROM image WHERE username=$1 AND id=$2;`,
+		`SELECT image_name, image_hash, size, added_date, up FROM image WHERE username=$1 AND id=$2;`,
 		username,
 		imageId,
 	).Scan(
 		&image.Filename,
-		&image.File,
+		&image.Hash,
 		&image.Size,
 		&image.AddedDate,
 		&image.UP,
 	)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	image.File, err = c.minio.Download("images", image.Hash)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -195,16 +216,22 @@ func (c *Client) FindProcessedImageByID(
 ) (*image.Image, error) {
 	image := image.Image{}
 	err := c.db.QueryRow(
-		`SELECT image_name, image_file, size, added_date, up FROM processed_image WHERE username=$1 AND id=$2;`,
+		`SELECT image_name, image_hash, size, added_date, up FROM processed_image WHERE username=$1 AND id=$2;`,
 		username,
 		id,
 	).Scan(
 		&image.Filename,
-		&image.File,
+		&image.Hash,
 		&image.Size,
 		&image.AddedDate,
 		&image.UP,
 	)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	image.File, err = c.minio.Download("images", image.Hash)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -226,12 +253,18 @@ func (c *Client) InsertImages(
 			return err
 		}
 
+		err = c.minio.Upload("images", image.Hash, image.File)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
 		imageId := 0
 		err = c.db.QueryRow(
-			`INSERT INTO image (username, image_name, image_file, size, up) VALUES ($1, $2, $3, $4, $5) RETURNING id;`,
+			`INSERT INTO image (username, image_name, image_hash, size, up) VALUES ($1, $2, $3, $4, $5) RETURNING id;`,
 			username,
 			image.Filename,
-			image.File,
+			image.Hash,
 			image.Size,
 			image.UP,
 		).Scan(&imageId)
@@ -274,7 +307,7 @@ func (c *Client) InsertImages(
 				return err
 			}
 		}
-		log.Println(image.Filename + "uploaded")
+		log.Println(image.Filename + " uploaded")
 	}
 
 	return nil
